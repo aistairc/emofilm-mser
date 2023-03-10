@@ -20,7 +20,7 @@ model = audonnx.load(model_root)
 # read annotation data
 data = pd.read_csv('./EmoFilm_labels_v2.csv')
 files = data['file'].values
-emo = data['emo'].values
+# emo = data['emo'].values # not used
 
 # for debugging
 # print(files)
