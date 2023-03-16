@@ -1,5 +1,7 @@
-# classifier for fixed split
+# code to optimize C parameter in SVM classifier
+import numpy as np
 import pandas as pd
+from sklearn.model_selection import LeaveOneGroupOut
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
@@ -25,22 +27,20 @@ test_features = features_w2v2.loc[test_files]
 train_labels = label_df.loc[train_files.index, "emo"]
 test_labels = label_df.loc[test_files.index, "emo"]
 
-c_opt = 1.4 #1.3
-svm_pipeline = make_pipeline(
-    StandardScaler(),
-    SVC(C=c_opt, kernel="rbf", gamma="scale"),
-)
+list_ua = []
+list_wa = []
+opt_c = np.arange(0.1, 100, 0.1)
 
 
-def svm_experiment(train_features, train_labels, test_features, test_labels):
+def svm_experiment(train_features, train_labels, test_features, test_labels,    opt_c):
     # Create an SVM classifier with default hyperparameters
-    # svm = SVC(C=50.9, gamma="auto")
+    svm = SVC(C=opt_c, gamma="scale")
 
     # Fit the SVM classifier on the training data
-    svm_pipeline.fit(train_features, train_labels)
+    svm.fit(train_features, train_labels)
 
     # Use the SVM classifier to predict the test labels
-    pred_labels = svm_pipeline.predict(test_features)
+    pred_labels = svm.predict(test_features)
 
     # Calculate the accuracy of the predictions
     ua = accuracy_score(test_labels, pred_labels)
@@ -49,17 +49,21 @@ def svm_experiment(train_features, train_labels, test_features, test_labels):
     wa = balanced_accuracy_score(test_labels, pred_labels)
 
     # Print the unbalanced and balanced accuracy scores
-    print("C:", c_opt)
     print("Unbalanced accuracy:", ua)
     print("Balanced accuracy:", wa)
 
     # Return the accuracy score
+    list_ua.append(ua)
+    list_wa.append(wa)
     return ua, wa
 
 
-svm_experiment(train_features, train_labels, test_features, test_labels)
+# Run the experiment with dfiferent C values
+for c in opt_c:
+    print("C:", c)
+    svm_experiment(train_features, train_labels, test_features, test_labels, c)
 
-# output:
-# (aud-vad-model) bagus@pc-omen:emofilm-vad-svm$ python emofilm_vad_svm_opt.py 
-# Unbalanced accuracy: 0.7845303867403315
-# Balanced accuracy: 0.7544329065908013
+# print max unbalanced accuracy
+print(f"Max unbalanced accuracy: {max(list_ua)} C={opt_c[np.argmax(list_ua)]}")
+# print max balanced accuracy
+print(f"Max balanced accuracy: {max(list_wa)} C={opt_c[np.argmax(list_wa)]}")

@@ -13,8 +13,8 @@ features_w2v2 = pd.read_pickle("cache/w2v2.pkl")
 label_df = pd.read_csv("EmoFilm_labels_16k_split.csv")
 
 # Extract file names for training and test sets
-train_files = label_df.loc[label_df["set"] == 0, "file"]
-test_files = label_df.loc[label_df["set"] == 1, "file"]
+train_files = label_df.loc[label_df["set"] == 0, "file"] 
+test_files = label_df.loc[(label_df["set"] == 1) & (label_df["language"] == "it"), "file"]
 
 # Filter features_w2v2 by file names
 train_features = features_w2v2.loc[train_files]
@@ -25,7 +25,7 @@ test_features = features_w2v2.loc[test_files]
 train_labels = label_df.loc[train_files.index, "emo"]
 test_labels = label_df.loc[test_files.index, "emo"]
 
-c_opt = 1.4 #1.3
+c_opt = 1.3 #1.3
 svm_pipeline = make_pipeline(
     StandardScaler(),
     SVC(C=c_opt, kernel="rbf", gamma="scale"),
@@ -61,5 +61,5 @@ svm_experiment(train_features, train_labels, test_features, test_labels)
 
 # output:
 # (aud-vad-model) bagus@pc-omen:emofilm-vad-svm$ python emofilm_vad_svm_opt.py 
-# Unbalanced accuracy: 0.7845303867403315
-# Balanced accuracy: 0.7544329065908013
+# Unbalanced accuracy: 0.803030303030303
+# Balanced accuracy: 0.717180735930736
